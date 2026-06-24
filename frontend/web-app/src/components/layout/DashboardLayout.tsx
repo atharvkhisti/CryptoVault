@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { kycService, type KycRecord } from '../../services/kyc';
+import { kycApi, type KycRecord } from '../../services/kycApi';
 import { Badge, getKycBadge } from '../ui/Badge';
 import {
   LayoutDashboard,
@@ -31,7 +31,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   useEffect(() => {
     if (user?.id) {
-      kycService
+      kycApi
         .getUserKycStatus(user.id)
         .then((res) => {
           if (res.success) {

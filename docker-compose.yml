@@ -127,6 +127,9 @@ services:
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - WALLET_SERVICE_HOST=${WALLET_SERVICE_HOST}
+      - TRANSACTION_SERVICE_HOST=${TRANSACTION_SERVICE_HOST}
+      - AUDIT_SERVICE_HOST=${AUDIT_SERVICE_HOST}
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -173,6 +176,9 @@ services:
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - AUDIT_SERVICE_HOST=${AUDIT_SERVICE_HOST}
+      - AUTH_SERVICE_HOST=${AUTH_SERVICE_HOST}
+      - NOTIFICATION_SERVICE_HOST=${NOTIFICATION_SERVICE_HOST}
     volumes:
       - kyc-uploads:/app/uploads
     depends_on:
