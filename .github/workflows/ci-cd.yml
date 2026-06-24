@@ -1,0 +1,73 @@
+name: CryptoVault CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: write # Required for deploying to GitHub Pages
+
+jobs:
+  build-and-test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and Install Common Library
+        run: |
+          cd backend/common-lib
+          mvn clean install -DskipTests
+
+      - name: Build and Test Microservices
+        run: |
+          services=("api-gateway" "auth-service" "wallet-service" "transaction-service" "notification-service" "risk-service" "audit-service" "kyc-service")
+          for service in "${services[@]}"; do
+            echo "Building and testing $service..."
+            cd backend/$service
+            mvn clean package
+            cd ../..
+          done
+
+  build-and-deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: build-and-test-backend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/web-app/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd frontend/web-app
+          npm install
+
+      - name: Build Frontend
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: |
+          cd frontend/web-app
+          npm run build
+
+      # Deploying to GitHub Pages (Completely free static web hosting)
+      - name: Deploy Frontend to GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/web-app/dist
